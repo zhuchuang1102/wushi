@@ -416,7 +416,8 @@
         }
 
         .achievement-list, .achievement-grid {
-            width: 48%;
+            flex: 1; /* 平分可用宽度 */
+            min-width: 260px; /* 小屏幕时保证可读性，达到后会堆叠 */
             display: flex;
             flex-direction: column;
             max-height: 100%;
@@ -430,7 +431,7 @@
 
         .achievement-grid-scroll {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
         }
 
@@ -475,7 +476,7 @@
         @media (max-width: 768px) {
             /* 移动端也保持更高的顶部间距以避免遮挡 */
             .achievement-layout { flex-direction: column; padding: 120px 5% 220px; gap: 18px; }
-            .achievement-list, .achievement-grid { width: 100%; max-height: calc(50vh); }
+            .achievement-list, .achievement-grid { flex: none; width: 100%; max-height: calc(50vh); }
             .ach-card { aspect-ratio: 1 / 1; min-height: 90px; }
             .ach-btn { height: 56px; font-size: 16px; padding-left: 12%; border-radius: 22px; }
             .achievement-grid-scroll { grid-template-columns: repeat(2, 1fr); }
