@@ -402,6 +402,84 @@
         .chapter-btn:hover::after {
             animation: shimmer 1.5s ease infinite;
         }
+
+        /* 成就墙左右布局与响应式 */
+        .page-content.achievement-layout {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            /* 提高顶部内边距并增加底部间距，避免与回溯按钮和页面底部重叠 */
+            padding: 110px 5% 50px;
+            height: 100%;
+            box-sizing: border-box;
+            gap: 4%;
+        }
+
+        .achievement-list, .achievement-grid {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+        }
+
+        .achievement-list-scroll, .achievement-grid-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .achievement-grid-scroll {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .ach-btn {
+            width: 100%;
+            height: 60px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding-left: 14.28%;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .ach-btn:hover { background: #e8e8e8; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+
+        .ach-card {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* 保持为正方形，宽度随网格列宽变化 */
+            background: #fafafa;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #666;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .achievement-list-scroll::-webkit-scrollbar,
+        .achievement-grid-scroll::-webkit-scrollbar { width: 8px; }
+
+        .achievement-list-scroll::-webkit-scrollbar-thumb,
+        .achievement-grid-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 8px; }
+
+        @media (max-width: 768px) {
+            /* 移动端也保持更高的顶部间距以避免遮挡 */
+            .achievement-layout { flex-direction: column; padding: 120px 5% 220px; gap: 18px; }
+            .achievement-list, .achievement-grid { width: 100%; max-height: calc(50vh); }
+            .ach-card { aspect-ratio: 1 / 1; min-height: 90px; }
+            .ach-btn { height: 56px; font-size: 16px; padding-left: 12%; border-radius: 22px; }
+            .achievement-grid-scroll { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -462,8 +540,60 @@
     <!-- 成就墙页面 -->
     <div class="page" id="achievement-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
-        <div class="page-content">
-            成就墙页面内容
+        <div class="page-content achievement-layout">
+            <div class="achievement-list">
+                <h2 style="font-size:20px; margin-bottom:10px;">成就列表</h2>
+                <div class="achievement-list-scroll">
+                    <!-- 左侧：20 个纵向按钮 -->
+                    <div class="ach-btn">成就 1 — 待解锁</div>
+                    <div class="ach-btn">成就 2 — 待解锁</div>
+                    <div class="ach-btn">成就 3 — 待解锁</div>
+                    <div class="ach-btn">成就 4 — 待解锁</div>
+                    <div class="ach-btn">成就 5 — 待解锁</div>
+                    <div class="ach-btn">成就 6 — 待解锁</div>
+                    <div class="ach-btn">成就 7 — 待解锁</div>
+                    <div class="ach-btn">成就 8 — 待解锁</div>
+                    <div class="ach-btn">成就 9 — 待解锁</div>
+                    <div class="ach-btn">成就 10 — 待解锁</div>
+                    <div class="ach-btn">成就 11 — 待解锁</div>
+                    <div class="ach-btn">成就 12 — 待解锁</div>
+                    <div class="ach-btn">成就 13 — 待解锁</div>
+                    <div class="ach-btn">成就 14 — 待解锁</div>
+                    <div class="ach-btn">成就 15 — 待解锁</div>
+                    <div class="ach-btn">成就 16 — 待解锁</div>
+                    <div class="ach-btn">成就 17 — 待解锁</div>
+                    <div class="ach-btn">成就 18 — 待解锁</div>
+                    <div class="ach-btn">成就 19 — 待解锁</div>
+                    <div class="ach-btn">成就 20 — 待解锁</div>
+                </div>
+            </div>
+
+            <div class="achievement-grid">
+                <h2 style="font-size:20px; margin-bottom:10px;">角色成就</h2>
+                <div class="achievement-grid-scroll">
+                    <!-- 右侧：两列共 20 个长方形卡片（两列布局） -->
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                    <div class="ach-card">待解锁</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -486,6 +616,25 @@
     <script>
         // 按钮文字替换和页面跳转功能
         document.addEventListener('DOMContentLoaded', function() {
+            // 页面层级关系映射
+            const pageHierarchy = {
+                'start-game-page': 'main-page',
+                'school-chapter-page': 'start-game-page',
+                'achievement-page': 'main-page',
+                'announcement-page': 'main-page',
+                'settings-page': 'main-page'
+            };
+            
+            // 页面显示方式映射
+            const pageDisplayStyle = {
+                'main-page': 'flex',
+                'start-game-page': 'block',
+                'school-chapter-page': 'block',
+                'achievement-page': 'block',
+                'announcement-page': 'block',
+                'settings-page': 'block'
+            };
+
             // 生成随机动画参数
             function generateRandomAnimationParams() {
                 return {
@@ -516,8 +665,8 @@
             }
 
             // 页面切换函数
-            function switchPage(fromPage, toPageId) {
-                const fromPageElement = document.getElementById(fromPage);
+            function switchPage(fromPageId, toPageId) {
+                const fromPageElement = document.getElementById(fromPageId);
                 const toPageElement = document.getElementById(toPageId);
                 
                 // 应用随机动画参数
@@ -528,17 +677,18 @@
                 
                 // 延迟显示目标页面
                 setTimeout(() => {
+                    // 隐藏当前页面
                     fromPageElement.style.display = 'none';
                     fromPageElement.classList.remove('time-forward');
                     
                     // 显示目标页面并添加时间回溯动画
-                    toPageElement.style.display = 'block';
+                    toPageElement.style.display = pageDisplayStyle[toPageId];
                     setTimeout(() => {
                         applyRandomAnimation(toPageElement, true);
                         toPageElement.classList.add('time-reverse');
                         toPageElement.style.opacity = '1';
                     }, 50);
-                }, 500); // 缩短动画时间
+                }, 500);
             }
 
             // 主页面按钮点击事件
@@ -557,39 +707,46 @@
                 });
             });
 
-            // 回溯按钮点击事件
+            // 学校篇页面按钮点击事件（如果需要的话）
+            document.querySelectorAll('.chapter-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 这里可以添加章节的点击事件逻辑
+                    console.log('点击了章节：', this.textContent);
+                });
+            });
+
+            // 统一的回溯按钮点击事件
             document.querySelectorAll('.back-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const currentPage = this.closest('.page');
-                    let targetPage = 'main-page';
+                    const currentPageId = currentPage.id;
                     
-                    // 根据当前页面确定要返回的页面
-                    if (currentPage.id === 'school-chapter-page') {
-                        targetPage = 'start-game-page';
-                    }
+                    // 根据页面层级关系获取要返回的页面
+                    const targetPageId = pageHierarchy[currentPageId];
                     
-                    // 应用随机动画参数
-                    applyRandomAnimation(currentPage, false);
-                    
-                    // 添加时间前进动画到当前页面
-                    currentPage.classList.add('time-forward');
-                    
-                    // 延迟显示目标页面
-                    setTimeout(() => {
-                        // 隐藏当前页面
-                        currentPage.style.display = 'none';
-                        currentPage.classList.remove('time-reverse', 'time-forward');
-                        currentPage.style.opacity = '0';
+                    if (targetPageId) {
+                        // 应用随机动画参数
+                        applyRandomAnimation(currentPage, false);
                         
-                        // 显示目标页面并添加时间回溯动画
-                        const targetPageElement = document.getElementById(targetPage);
-                        targetPageElement.style.display = targetPage === 'main-page' ? 'flex' : 'block';
+                        // 添加时间前进动画到当前页面
+                        currentPage.classList.add('time-forward');
+                        
+                        // 延迟显示目标页面
                         setTimeout(() => {
-                            applyRandomAnimation(targetPageElement, true);
-                            targetPageElement.classList.add('time-reverse');
-                            targetPageElement.style.opacity = '1';
-                        }, 50);
-                    }, 500); // 缩短动画时间
+                            // 隐藏当前页面
+                            currentPage.style.display = 'none';
+                            currentPage.classList.remove('time-reverse', 'time-forward');
+                            
+                            // 显示目标页面并添加时间回溯动画
+                            const targetPageElement = document.getElementById(targetPageId);
+                            targetPageElement.style.display = pageDisplayStyle[targetPageId];
+                            setTimeout(() => {
+                                applyRandomAnimation(targetPageElement, true);
+                                targetPageElement.classList.add('time-reverse');
+                                targetPageElement.style.opacity = '1';
+                            }, 50);
+                        }, 500);
+                    }
                 });
             });
 
