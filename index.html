@@ -140,24 +140,24 @@
             }
             
             .btn:nth-child(1) {
-                left: calc(25% - 70px);
+                left: calc(25% - 50px);
                 bottom: 50px;
             }
             
             .btn:nth-child(2) {
-                left: calc(50% - 130px);
+                left: calc(50% - 110px);
                 bottom: 15px;
                 z-index: 5;
             }
             
             .btn:nth-child(3) {
-                right: calc(50% - 130px);
+                right: calc(50% - 110px);
                 bottom: 15px;
                 z-index: 5;
             }
             
             .btn:nth-child(4) {
-                right: calc(25% - 70px);
+                right: calc(25% - 50px);
                 bottom: 50px;
             }
         }
@@ -474,12 +474,14 @@
         .achievement-grid-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 8px; }
 
         @media (max-width: 768px) {
-            /* 移动端也保持更高的顶部间距以避免遮挡 */
-            .achievement-layout { flex-direction: column; padding: 120px 5% 220px; gap: 18px; }
-            .achievement-list, .achievement-grid { flex: none; width: 100%; max-height: calc(50vh); }
+            /* 手机端：保持左右两栏布局，右侧网格改为单列 */
+            .achievement-layout { flex-direction: row; padding: 120px 4% 220px; gap: 12px; }
+            .achievement-list, .achievement-grid { flex: 1 1 50%; min-width: 0; max-height: calc(100vh - 260px); }
+            .achievement-list-scroll, .achievement-grid-scroll { max-height: calc(100vh - 260px); }
             .ach-card { aspect-ratio: 1 / 1; min-height: 90px; }
-            .ach-btn { height: 56px; font-size: 16px; padding-left: 12%; border-radius: 22px; }
-            .achievement-grid-scroll { grid-template-columns: repeat(2, 1fr); }
+            .ach-btn { height: 52px; font-size: 15px; padding-left: 10%; border-radius: 20px; }
+            .achievement-grid-scroll { grid-template-columns: 1fr; gap: 10px; }
+            .achievement-list-scroll::-webkit-scrollbar, .achievement-grid-scroll::-webkit-scrollbar { width: 6px; }
         }
     </style>
 </head>
@@ -620,7 +622,7 @@
             // 页面层级关系映射
             const pageHierarchy = {
                 'start-game-page': 'main-page',
-                'school-chapter-page': 'start-game-page',
+                'school-chapter-page': 'main-page',
                 'achievement-page': 'main-page',
                 'announcement-page': 'main-page',
                 'settings-page': 'main-page'
@@ -664,6 +666,43 @@
                     element.style.setProperty('--hue-end', `${params.hueEnd}deg`);
                 }
             }
+            
+            // 重新激活主页面的浮入动画 - 修复版本
+            function reanimateMainPage() {
+                const mainPage = document.getElementById('main-page');
+                const img = mainPage.querySelector('img');
+                const buttonsArc = mainPage.querySelector('.buttons-arc');
+                
+                // 先确保主页面正确显示
+                mainPage.style.display = 'flex';
+                mainPage.style.opacity = '1';
+                
+                // 重置所有元素为初始状态
+                const elements = [img, buttonsArc];
+                elements.forEach(element => {
+                    if (element) {
+                        // 移除所有可能的动画类
+                        element.classList.remove('time-reverse', 'time-forward');
+                        
+                        // 重置样式
+                        element.style.animation = 'none';
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(80px)';
+                        
+                        // 强制重绘 - 修复移动端问题
+                        void element.offsetWidth;
+                        
+                        // 重新应用动画
+                        setTimeout(() => {
+                            if (element === img) {
+                                element.style.animation = 'floatIn 2s ease-out 0.3s forwards';
+                            } else if (element === buttonsArc) {
+                                element.style.animation = 'floatIn 2s ease-out 0.6s forwards';
+                            }
+                        }, 10);
+                    }
+                });
+            }
 
             // 页面切换函数
             function switchPage(fromPageId, toPageId) {
@@ -682,13 +721,32 @@
                     fromPageElement.style.display = 'none';
                     fromPageElement.classList.remove('time-forward');
                     
-                    // 显示目标页面并添加时间回溯动画
-                    toPageElement.style.display = pageDisplayStyle[toPageId];
-                    setTimeout(() => {
-                        applyRandomAnimation(toPageElement, true);
-                        toPageElement.classList.add('time-reverse');
-                        toPageElement.style.opacity = '1';
-                    }, 50);
+                    // 如果是返回到主页面
+                    if (toPageId === 'main-page') {
+                        // 显示主页面
+                        toPageElement.style.display = pageDisplayStyle[toPageId];
+                        
+                        // 确保主页面完全显示后再执行动画
+                        setTimeout(() => {
+                            applyRandomAnimation(toPageElement, true);
+                            toPageElement.classList.add('time-reverse');
+                            toPageElement.style.opacity = '1';
+                            
+                            // 动画结束后重新激活浮入动画
+                            setTimeout(() => {
+                                toPageElement.classList.remove('time-reverse');
+                                reanimateMainPage();
+                            }, 500);
+                        }, 50);
+                    } else {
+                        // 显示目标页面并添加时间回溯动画
+                        toPageElement.style.display = pageDisplayStyle[toPageId];
+                        setTimeout(() => {
+                            applyRandomAnimation(toPageElement, true);
+                            toPageElement.classList.add('time-reverse');
+                            toPageElement.style.opacity = '1';
+                        }, 50);
+                    }
                 }, 500);
             }
 
@@ -716,7 +774,7 @@
                 });
             });
 
-            // 统一的回溯按钮点击事件
+            // 统一的回溯按钮点击事件 - 修复版本
             document.querySelectorAll('.back-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const currentPage = this.closest('.page');
@@ -738,14 +796,32 @@
                             currentPage.style.display = 'none';
                             currentPage.classList.remove('time-reverse', 'time-forward');
                             
-                            // 显示目标页面并添加时间回溯动画
+                            // 显示目标页面
                             const targetPageElement = document.getElementById(targetPageId);
                             targetPageElement.style.display = pageDisplayStyle[targetPageId];
-                            setTimeout(() => {
-                                applyRandomAnimation(targetPageElement, true);
-                                targetPageElement.classList.add('time-reverse');
-                                targetPageElement.style.opacity = '1';
-                            }, 50);
+                            
+                            // 如果是返回到主页面
+                            if (targetPageId === 'main-page') {
+                                // 确保主页面完全显示后再执行动画
+                                setTimeout(() => {
+                                    applyRandomAnimation(targetPageElement, true);
+                                    targetPageElement.classList.add('time-reverse');
+                                    targetPageElement.style.opacity = '1';
+                                    
+                                    // 动画结束后重新激活浮入动画
+                                    setTimeout(() => {
+                                        targetPageElement.classList.remove('time-reverse');
+                                        reanimateMainPage();
+                                    }, 500);
+                                }, 50);
+                            } else {
+                                // 其他页面正常显示
+                                setTimeout(() => {
+                                    applyRandomAnimation(targetPageElement, true);
+                                    targetPageElement.classList.add('time-reverse');
+                                    targetPageElement.style.opacity = '1';
+                                }, 50);
+                            }
                         }, 500);
                     }
                 });
@@ -774,8 +850,24 @@
                 });
             }
 
+            // 初始化时立即显示主页面元素
+            reanimateMainPage();
+            
             window.addEventListener('resize', adjustButtonPositions);
             adjustButtonPositions();
+            
+            // 修复移动端触摸事件
+            document.addEventListener('touchstart', function(e) {
+                // 防止触摸事件的默认行为
+                if (e.target.classList.contains('btn') || 
+                    e.target.classList.contains('back-btn') ||
+                    e.target.classList.contains('long-btn') ||
+                    e.target.classList.contains('chapter-btn') ||
+                    e.target.classList.contains('ach-btn') ||
+                    e.target.classList.contains('ach-card')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
     </script>
 </body>
