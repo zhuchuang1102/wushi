@@ -857,17 +857,7 @@
             adjustButtonPositions();
             
             // 修复移动端触摸事件
-            document.addEventListener('touchstart', function(e) {
-                // 防止触摸事件的默认行为
-                if (e.target.classList.contains('btn') || 
-                    e.target.classList.contains('back-btn') ||
-                    e.target.classList.contains('long-btn') ||
-                    e.target.classList.contains('chapter-btn') ||
-                    e.target.classList.contains('ach-btn') ||
-                    e.target.classList.contains('ach-card')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            
         });
     </script>
 </body>
