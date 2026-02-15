@@ -663,15 +663,21 @@
             };
 
             let isAnimating = false;
+            let currentPageId = 'main-page'; // 记录当前显示的页面ID
+
+            // ---------- 定义播放音乐的页面 ----------
+            const MUSIC_PAGES = ['main-page', 'settings-page'];
 
             // ---------- 全局背景音乐控制 ----------
             const bgAudio = document.getElementById('bgMusic');
-            let playPending = false; // 标记是否因自动播放策略而等待交互
+            let playPending = false; // 标记是否因自动播放策略而等待用户交互
 
-            // 尝试播放音乐
+            // 尝试播放音乐（仅当当前页面是音乐页时才会真正播放，否则忽略）
             function playBgMusic() {
                 if (!bgAudio) return;
-                if (!bgAudio.paused) return;
+                // 如果当前页面不是音乐页，则不播放（防止意外启动）
+                if (!MUSIC_PAGES.includes(currentPageId)) return;
+                if (!bgAudio.paused) return; // 已经在播放
                 bgAudio.play().catch(e => {
                     console.log('自动播放被阻止，等待用户交互后播放');
                     playPending = true;
@@ -681,14 +687,19 @@
             function pauseBgMusic() {
                 if (!bgAudio) return;
                 bgAudio.pause();
-                playPending = false;
+                playPending = false; // 暂停后取消等待标志
             }
 
-            // 用户交互处理函数：如果有等待播放的标志，则尝试播放并清除标志
+            // 用户交互处理函数：根据当前页面决定是否播放/暂停
             function handleUserInteractionForAudio() {
-                if (playPending && bgAudio && bgAudio.paused) {
+                // 如果当前页面是音乐页且音频暂停，则尝试播放
+                if (MUSIC_PAGES.includes(currentPageId) && bgAudio && bgAudio.paused) {
                     bgAudio.play().catch(e => console.warn('用户交互后播放仍然失败', e));
                     playPending = false;
+                } 
+                // 如果当前页面不是音乐页但音频正在播放，则暂停（安全措施）
+                else if (!MUSIC_PAGES.includes(currentPageId) && bgAudio && !bgAudio.paused) {
+                    pauseBgMusic();
                 }
             }
 
@@ -771,7 +782,7 @@
                 }, 20);
             }
 
-            // 页面切换函数（集成音频控制）
+            // 页面切换函数（集成音频控制：离开音乐页暂停，进入音乐页播放）
             function switchPage(fromPageId, toPageId) {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -783,8 +794,8 @@
                     return;
                 }
 
-                // 如果是从首页离开，暂停音乐
-                if (fromPageId === 'main-page') {
+                // 如果离开的页面是音乐页，暂停音乐
+                if (MUSIC_PAGES.includes(fromPageId)) {
                     pauseBgMusic();
                 }
 
@@ -800,8 +811,11 @@
                     toPage.classList.add('time-reverse');
                     toPage.style.opacity = '1';
                     
-                    // 如果切换到首页，尝试播放音乐
-                    if (toPageId === 'main-page') {
+                    // 更新当前页面ID
+                    currentPageId = toPageId;
+
+                    // 如果进入的页面是音乐页，尝试播放音乐
+                    if (MUSIC_PAGES.includes(toPageId)) {
                         playBgMusic();
                     }
                     
@@ -879,7 +893,7 @@
                 // 初始化主页面动画
                 reanimateMainPage();
 
-                // 首次加载时尝试播放音乐
+                // 首次加载时尝试播放音乐（首页）
                 playBgMusic();
             });
         })();
