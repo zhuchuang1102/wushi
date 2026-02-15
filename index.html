@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>雾失楼台 · 优化版</title>
+    <title>雾失楼台</title>
     <style>
         * {
             margin: 0;
@@ -38,19 +38,11 @@
             position: relative;
         }
 
-        /* 整体浮入动画 */
         @keyframes floatIn {
-            0% {
-                transform: translateY(80px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            0% { transform: translateY(80px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
-        /* 为图片和按钮容器添加动画 */
         .container > * {
             animation: floatIn 2s ease-out forwards;
             opacity: 0;
@@ -62,7 +54,7 @@
             max-width: 500px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            pointer-events: none; /* 图片不阻挡按钮 */
+            pointer-events: none;
         }
 
         .buttons-arc {
@@ -100,55 +92,25 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         
-        /* 完全对称的按钮布局 (纯CSS实现，无需JS干预) */
-        .btn:nth-child(1) { /* 开始游戏 */
-            left: calc(25% - 60px);
-            bottom: 60px;
-        }
-        .btn:nth-child(2) { /* 成就墙 */
-            left: calc(50% - 140px);
-            bottom: 20px;
-            z-index: 5;
-        }
-        .btn:nth-child(3) { /* 公告 */
-            right: calc(50% - 140px);
-            bottom: 20px;
-            z-index: 5;
-        }
-        .btn:nth-child(4) { /* 设置 */
-            right: calc(25% - 60px);
-            bottom: 60px;
-        }
+        .btn:nth-child(1) { left: calc(25% - 60px); bottom: 60px; }
+        .btn:nth-child(2) { left: calc(50% - 140px); bottom: 20px; z-index: 5; }
+        .btn:nth-child(3) { right: calc(50% - 140px); bottom: 20px; z-index: 5; }
+        .btn:nth-child(4) { right: calc(25% - 60px); bottom: 60px; }
 
-        /* 响应式微调 */
         @media (max-width: 768px) {
-            .container > img {
-                width: 80%;
-            }
+            .container > img { width: 80%; }
             .btn {
                 padding: 10px 20px;
                 font-size: 16px;
                 min-width: 100px;
             }
-            .btn:nth-child(1) {
-                left: calc(25% - 50px);
-                bottom: 50px;
-            }
-            .btn:nth-child(2) {
-                left: calc(50% - 110px);
-                bottom: 15px;
-            }
-            .btn:nth-child(3) {
-                right: calc(50% - 110px);
-                bottom: 15px;
-            }
-            .btn:nth-child(4) {
-                right: calc(25% - 50px);
-                bottom: 50px;
-            }
+            .btn:nth-child(1) { left: calc(25% - 50px); bottom: 50px; }
+            .btn:nth-child(2) { left: calc(50% - 110px); bottom: 15px; }
+            .btn:nth-child(3) { right: calc(50% - 110px); bottom: 15px; }
+            .btn:nth-child(4) { right: calc(25% - 50px); bottom: 50px; }
         }
 
-        /* ===== 页面切换层 ===== */
+        /* 页面切换层 */
         .page {
             position: fixed;
             top: 0;
@@ -162,7 +124,6 @@
             overflow: hidden;
         }
 
-        /* 回溯按钮 (增大) */
         .back-btn {
             position: absolute;
             top: 30px;
@@ -189,7 +150,6 @@
             font-size: 18px;
         }
 
-        /* 时间回溯特效 (缩短至0.4s使手感更轻快) */
         @keyframes timeReverse {
             0% {
                 transform: scale(0.7) rotate(var(--start-rotate, -15deg)) translateY(50px);
@@ -231,7 +191,7 @@
             animation: timeForward 0.4s ease-out forwards;
         }
 
-        /* ===== 开始游戏页面 (长按钮) ===== */
+        /* 开始游戏页面 */
         .start-game-container {
             width: 90%;
             height: calc(100% - 120px);
@@ -286,19 +246,7 @@
             100% { transform: translateX(100%); }
         }
 
-        /* 不可用按钮样式 (??? 按钮) */
-        .long-btn.disabled,
-        .chapter-btn.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            pointer-events: none; /* 由JS控制实际点击弹窗，故保留事件但改变样式 */
-        }
-        .long-btn.disabled:hover {
-            transform: none;
-            background: #f0f0f0;
-        }
-
-        /* ===== 学校篇 (章节列表) ===== */
+        /* 学校篇 */
         .chapter-container {
             width: 90%;
             height: calc(100% - 120px);
@@ -367,7 +315,7 @@
             animation: shimmer 1.5s ease infinite;
         }
 
-        /* ===== 成就墙 (左右布局) ===== */
+        /* 成就墙 */
         .page-content.achievement-layout {
             display: flex;
             align-items: flex-start;
@@ -443,7 +391,6 @@
             .achievement-grid-scroll { grid-template-columns: 1fr; gap: 10px; }
         }
 
-        /* 公告/设置通用占位 */
         .page-content {
             width: 100%;
             height: 100%;
@@ -456,9 +403,9 @@
     </style>
 </head>
 <body>
-    <!-- 主页面 -->
+    <!-- 主页面 - 图片链接完全保持原样，无任何额外属性 -->
     <div class="container" id="main-page">
-        <img src="./1760105489860.png" alt="雾失楼台" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-size%3D%2224%22%20fill%3D%22%23555%22%3E雾失楼台%3C%2Ftext%3E%3C%2Fsvg%3E'">
+        <img src="./1760105489860.png" alt="雾失楼台">
         
         <div class="buttons-arc">
             <button class="btn" data-target="start-game">开始游戏</button>
@@ -480,12 +427,11 @@
         </div>
     </div>
 
-    <!-- 学校篇页面 (章节选择) -->
+    <!-- 学校篇页面 -->
     <div class="page" id="school-chapter-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
         <div class="chapter-container">
             <div class="chapter-scroll">
-                <!-- 共20天，点击均弹出提示（暂未实装具体章节） -->
                 <div class="chapter-btn" data-coming-soon="true">第一天</div>
                 <div class="chapter-btn" data-coming-soon="true">第二天</div>
                 <div class="chapter-btn" data-coming-soon="true">第三天</div>
@@ -510,14 +456,13 @@
         </div>
     </div>
 
-    <!-- 成就墙页面 (左右分区) -->
+    <!-- 成就墙页面 -->
     <div class="page" id="achievement-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
         <div class="page-content achievement-layout">
             <div class="achievement-list">
                 <h2 style="font-size:20px; margin-bottom:10px;">成就列表</h2>
                 <div class="achievement-list-scroll">
-                    <!-- 左侧20个按钮，也添加待解锁提示 -->
                     <div class="ach-btn" data-coming-soon="true">成就 1 — 待解锁</div>
                     <div class="ach-btn" data-coming-soon="true">成就 2 — 待解锁</div>
                     <div class="ach-btn" data-coming-soon="true">成就 3 — 待解锁</div>
@@ -544,7 +489,6 @@
             <div class="achievement-grid">
                 <h2 style="font-size:20px; margin-bottom:10px;">角色成就</h2>
                 <div class="achievement-grid-scroll">
-                    <!-- 右侧两列卡片，同样提示敬请期待 -->
                     <div class="ach-card" data-coming-soon="true">待解锁</div>
                     <div class="ach-card" data-coming-soon="true">待解锁</div>
                     <div class="ach-card" data-coming-soon="true">待解锁</div>
@@ -588,10 +532,9 @@
 
     <script>
         (function() {
-            // ---------- 页面层级定义 (修正: 学校篇应返回开始游戏页面) ----------
             const pageHierarchy = {
                 'start-game-page': 'main-page',
-                'school-chapter-page': 'start-game-page',   // 关键修正：从学校篇回溯回到开始游戏，而不是主页
+                'school-chapter-page': 'start-game-page',
                 'achievement-page': 'main-page',
                 'announcement-page': 'main-page',
                 'settings-page': 'main-page'
@@ -606,10 +549,8 @@
                 'settings-page': 'block'
             };
 
-            // 防抖锁: 避免动画期间重复点击
             let isAnimating = false;
 
-            // 生成随机动画参数 (增加视觉变化)
             function generateRandomAnimationParams() {
                 return {
                     startRotate: Math.random() * 30 - 15,
@@ -637,7 +578,6 @@
                 }
             }
             
-            // 重新激活主页面的浮入动画 (用于从其他页面返回主页面)
             function reanimateMainPage() {
                 const mainPage = document.getElementById('main-page');
                 const img = mainPage.querySelector('img');
@@ -646,24 +586,21 @@
                 mainPage.style.display = 'flex';
                 mainPage.style.opacity = '1';
                 
-                // 重置内部元素动画
                 [img, buttonsArc].forEach(el => {
                     if (!el) return;
                     el.classList.remove('time-reverse', 'time-forward');
                     el.style.animation = 'none';
                     el.style.opacity = '0';
                     el.style.transform = 'translateY(80px)';
-                    void el.offsetWidth; // 强制重绘
+                    void el.offsetWidth;
                 });
                 
-                // 重新应用浮动动画 (延迟确保移除生效)
                 setTimeout(() => {
                     if (img) img.style.animation = 'floatIn 2s ease-out 0.3s forwards';
                     if (buttonsArc) buttonsArc.style.animation = 'floatIn 2s ease-out 0.6s forwards';
                 }, 20);
             }
 
-            // 核心页面切换函数
             function switchPage(fromPageId, toPageId) {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -675,43 +612,30 @@
                     return;
                 }
 
-                // 1. 当前页添加时间前进动画
                 applyRandomAnimation(fromPage, false);
                 fromPage.classList.add('time-forward');
                 
-                // 2. 0.4s后隐藏当前页，显示目标页并加上回溯动画
                 setTimeout(() => {
                     fromPage.style.display = 'none';
                     fromPage.classList.remove('time-forward', 'time-reverse');
                     
-                    // 显示目标页面
                     toPage.style.display = pageDisplayStyle[toPageId] || 'block';
-                    
-                    // 给目标页面添加回溯动画
                     applyRandomAnimation(toPage, true);
                     toPage.classList.add('time-reverse');
                     toPage.style.opacity = '1';
                     
-                    // 3. 动画结束后清理类名，并处理主页特殊逻辑
                     setTimeout(() => {
                         toPage.classList.remove('time-reverse');
-                        
-                        // 如果回到主页，需要重新触发内部浮入动画 (但不要覆盖主页本身的显示)
                         if (toPageId === 'main-page') {
-                            // 稍微延迟保证time-reverse已完全移除
-                            setTimeout(() => {
-                                reanimateMainPage();
-                            }, 30);
+                            setTimeout(() => reanimateMainPage(), 30);
                         }
-                        
                         isAnimating = false;
-                    }, 400); // 与动画时长0.4s匹配
-                }, 400); // 等待前进动画完成
+                    }, 400);
+                }, 400);
             }
 
-            // ---------- 事件绑定 ----------
             document.addEventListener('DOMContentLoaded', function() {
-                // 1. 主页面四个按钮
+                // 主页面按钮
                 document.querySelectorAll('.btn[data-target]').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -720,9 +644,8 @@
                     });
                 });
 
-                // 2. 开始游戏页面内的长按钮: 学校篇 (真实跳转) + 敬请期待 (弹窗)
+                // 开始游戏长按钮
                 document.querySelectorAll('.long-btn').forEach(btn => {
-                    // 如果是 ??? 按钮 (data-coming-soon)
                     if (btn.hasAttribute('data-coming-soon')) {
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
@@ -730,7 +653,6 @@
                             alert('✨ 敬请期待后续章节');
                         });
                     } else if (btn.dataset.target) {
-                        // 学校篇
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
                             const targetPage = this.getAttribute('data-target') + '-page';
@@ -739,16 +661,16 @@
                     }
                 });
 
-                // 3. 学校篇内所有章节按钮 (暂未实装)
+                // 章节按钮
                 document.querySelectorAll('.chapter-btn').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         if (isAnimating) return;
-                        alert(`📖 章节「${this.textContent}」尚未开启，请等待更新`);
+                        alert(`📖 章节「${this.textContent}」尚未开启`);
                     });
                 });
 
-                // 4. 成就墙内所有可点元素 (左侧成就按钮 + 右侧卡片)
+                // 成就墙元素
                 document.querySelectorAll('.ach-btn, .ach-card').forEach(el => {
                     el.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -757,32 +679,20 @@
                     });
                 });
 
-                // 5. 所有回溯按钮 (统一处理)
+                // 回溯按钮
                 document.querySelectorAll('.back-btn').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         if (isAnimating) return;
-
                         const currentPage = this.closest('.page');
                         if (!currentPage) return;
                         const currentId = currentPage.id;
                         const targetId = pageHierarchy[currentId];
-                        
-                        if (targetId) {
-                            switchPage(currentId, targetId);
-                        } else {
-                            console.warn('未定义回溯目标', currentId);
-                        }
+                        if (targetId) switchPage(currentId, targetId);
                     });
                 });
 
-                // 6. 初始化主页面动画
                 reanimateMainPage();
-
-                // 7. 移除原先的JS动态定位 (避免覆盖CSS)，窗口变化时什么都不做
-                //    原 adjustButtonPositions 被移除，完全信任CSS媒体查询
-                
-                // 8. 额外处理: 图片加载失败占位 (已在img onerror处理)
             });
         })();
     </script>
