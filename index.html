@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <audio src="泡朝.mp3" controls autoplay loop>
     <title>雾失楼台</title>
     <style>
         /* === 基础样式 === */
@@ -57,7 +56,7 @@
             max-width: 500px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            pointer-events: none; /* 图片不阻挡按钮 */
+            pointer-events: none;
         }
 
         .buttons-arc {
@@ -71,7 +70,6 @@
             z-index: 3;
         }
         
-        /* 主菜单按钮样式 */
         .btn {
             background: #ffffff;
             color: #333;
@@ -129,7 +127,6 @@
             overflow: hidden;
         }
 
-        /* 回溯按钮 */
         .back-btn {
             position: absolute;
             top: 30px;
@@ -398,7 +395,7 @@
             .achievement-grid-scroll { grid-template-columns: 1fr; gap: 10px; }
         }
 
-        /* 通用页面内容区 (flex 居中) */
+        /* 通用页面内容区 */
         .page-content {
             width: 100%;
             height: 100%;
@@ -409,7 +406,7 @@
             color: #333;
         }
 
-        /* ===== 新增：模仿主按钮的静态消息框 ===== */
+        /* 模仿主按钮的静态消息框 */
         .btn-message {
             background: #ffffff;
             color: #333;
@@ -419,18 +416,20 @@
             font-family: inherit;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: inline-block;      /* 让框适应内容宽度 */
-            margin: 0 auto;             /* 水平居中 */
-            cursor: default;            /* 表示不可点击 */
-            transition: none;           /* 无悬停效果，保持静态 */
+            display: inline-block;
+            margin: 0 auto;
+            cursor: default;
+            transition: none;
             text-align: center;
-            max-width: 90%;             /* 防止溢出 */
+            max-width: 90%;
             word-break: break-word;
         }
-        /* 可选：保留与按钮一致的外观，但无悬停反馈 */
     </style>
 </head>
 <body>
+    <!-- 全局背景音乐 (隐藏) -->
+    <audio id="bgMusic" src="./泡朝.mp3" loop preload="auto" style="display: none;"></audio>
+
     <!-- 主页面 (图片链接保持原样) -->
     <div class="container" id="main-page">
         <img src="./1760105489860.png" alt="雾失楼台">
@@ -455,7 +454,7 @@
         </div>
     </div>
 
-    <!-- 学校篇页面 (章节选择) -->
+    <!-- 学校篇页面 -->
     <div class="page" id="school-chapter-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
         <div class="chapter-container">
@@ -545,11 +544,9 @@
     <!-- 公告页面 (已添加指定的文本栏) -->
     <div class="page" id="announcement-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
-        <!-- 将 .page-content 改为 column 布局，容纳两个元素 -->
         <div class="page-content" style="flex-direction: column; gap: 20px;">
-            <div>📢 暂无新公告</div>
-            <!-- 新增的静态按钮样式文本栏，内容完全按指定 -->
-            <div class="btn-message">小的 2026/2/15留 好累好累好累</div>
+            <div>📢 新公告</div>
+            <div class="btn-message">小的 2026/2/15留 哈哈哈哈哈哈哈</div>
         </div>
     </div>
 
@@ -557,13 +554,12 @@
     <div class="page" id="settings-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
         <div class="page-content">
-            ⚙️ 设置项开发中
+            ⚙️ 设置项开发中,敬请期待
         </div>
     </div>
 
     <script>
         (function() {
-            // 页面层级定义 (学校篇返回开始游戏页面)
             const pageHierarchy = {
                 'start-game-page': 'main-page',
                 'school-chapter-page': 'start-game-page',
@@ -583,7 +579,45 @@
 
             let isAnimating = false;
 
-            // 随机动画参数
+            // ---------- 全局背景音乐控制 ----------
+            const bgAudio = document.getElementById('bgMusic');
+            let playPending = false; // 标记是否因自动播放策略而等待交互
+
+            // 尝试播放音乐（忽略重复调用）
+            function playBgMusic() {
+                if (!bgAudio) return;
+                // 如果已经在播放则忽略
+                if (!bgAudio.paused) return;
+                // 尝试播放，捕获自动播放错误
+                bgAudio.play().catch(e => {
+                    // 自动播放被阻止，设置标志，等待手势
+                    console.log('自动播放被阻止，等待用户交互后播放');
+                    playPending = true;
+                });
+            }
+
+            function pauseBgMusic() {
+                if (!bgAudio) return;
+                bgAudio.pause();
+                playPending = false; // 暂停后取消等待标志（因为下次进入首页会重新尝试）
+            }
+
+            // 用户交互处理函数：如果有等待播放的标志，则尝试播放并清除标志
+            function handleUserInteractionForAudio() {
+                if (playPending && bgAudio && bgAudio.paused) {
+                    bgAudio.play().catch(e => console.warn('用户交互后播放仍然失败', e));
+                    playPending = false;
+                }
+            }
+
+            // 监听全局用户交互（点击、触摸、按键），用于处理自动播放恢复
+            document.addEventListener('click', handleUserInteractionForAudio);
+            document.addEventListener('touchstart', handleUserInteractionForAudio);
+            document.addEventListener('keydown', handleUserInteractionForAudio);
+
+            // 在页面切换到首页时播放，离开首页时暂停
+            // 要在switchPage函数中加入对目标页面的判断
+            // ---------- 随机动画参数 ----------
             function generateRandomAnimationParams() {
                 return {
                     startRotate: Math.random() * 30 - 15,
@@ -611,7 +645,6 @@
                 }
             }
             
-            // 重新激活主页面浮入动画
             function reanimateMainPage() {
                 const mainPage = document.getElementById('main-page');
                 const img = mainPage.querySelector('img');
@@ -626,7 +659,7 @@
                     el.style.animation = 'none';
                     el.style.opacity = '0';
                     el.style.transform = 'translateY(80px)';
-                    void el.offsetWidth; // 强制重绘
+                    void el.offsetWidth;
                 });
                 
                 setTimeout(() => {
@@ -635,7 +668,7 @@
                 }, 20);
             }
 
-            // 页面切换函数
+            // 增强切换函数，加入音频控制
             function switchPage(fromPageId, toPageId) {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -645,6 +678,11 @@
                 if (!fromPage || !toPage) {
                     isAnimating = false;
                     return;
+                }
+
+                // 如果是从首页离开，暂停音乐
+                if (fromPageId === 'main-page') {
+                    pauseBgMusic();
                 }
 
                 applyRandomAnimation(fromPage, false);
@@ -658,6 +696,11 @@
                     applyRandomAnimation(toPage, true);
                     toPage.classList.add('time-reverse');
                     toPage.style.opacity = '1';
+                    
+                    // 如果切换到首页，尝试播放音乐
+                    if (toPageId === 'main-page') {
+                        playBgMusic();
+                    }
                     
                     setTimeout(() => {
                         toPage.classList.remove('time-reverse');
@@ -727,11 +770,14 @@
                     });
                 });
 
-                // 初始化主页面
+                // 初始化主页面动画
                 reanimateMainPage();
+
+                // 首次加载时直接显示首页，尝试播放音乐
+                // 这里可能会失败，但会设置playPending，等待点击后播放
+                playBgMusic();
             });
         })();
     </script>
 </body>
 </html>
-
