@@ -58,9 +58,10 @@
             background: #2a2a2a;
             border-color: #555;
         }
-        body.dark-mode .actual-volume {
-            background: #2a2a2a;
-            color: #aaa;
+        /* 确保首页图片不受深色模式影响 */
+        body.dark-mode .container > img {
+            filter: none;
+            opacity: 1;
         }
         
         .container {
@@ -511,7 +512,7 @@
             word-break: break-word;
         }
 
-        /* ===== 设置页面 ===== */
+        /* ===== 设置页面 (仅音乐和音效音量，已删除总音量) ===== */
         .settings-container {
             width: 90%;
             max-width: 600px;
@@ -599,19 +600,6 @@
             border: 1px solid #ddd;
         }
 
-        .actual-volume {
-            font-size: 16px;
-            color: #666;
-            background: #eee;
-            padding: 4px 8px;
-            border-radius: 16px;
-            white-space: nowrap;
-        }
-        .actual-volume.muted {
-            color: #999;
-            background: #f0f0f0;
-        }
-
         /* 深色模式切换行 */
         .darkmode-row {
             display: flex;
@@ -693,9 +681,6 @@
                 width: 100%;
                 justify-content: space-between;
             }
-            .actual-volume {
-                margin-left: auto;
-            }
         }
 
         /* 粒子画布 */
@@ -709,7 +694,7 @@
             z-index: 1;
         }
 
-        /* 首页文案区 */
+        /* 首页文案区 - 完美居中 */
         .home-quote {
             position: absolute;
             top: 15%;
@@ -723,9 +708,12 @@
             padding: 16px 24px;
             border-radius: 40px;
             border: 1px solid rgba(0,0,0,0.1);
-            width: 80%;
-            max-width: 500px;
+            width: fit-content;
+            max-width: 80%;
+            min-width: 280px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            box-sizing: content-box;
         }
         body.dark-mode .home-quote {
             background: rgba(30,30,30,0.7);
@@ -778,7 +766,7 @@
 
     <!-- 主页面 -->
     <div class="container" id="main-page">
-        <!-- 首页文案区 -->
+        <!-- 首页文案区 (完美居中) -->
         <div class="home-quote" id="homeQuote">
             <div class="date" id="currentDate"></div>
             <div class="quote" id="dailyQuote"></div>
@@ -889,40 +877,29 @@
         </div>
     </div>
 
-    <!-- 设置页面 (三组音量滑块 + 深色模式) -->
+    <!-- 设置页面 (仅音乐和音效音量) -->
     <div class="page" id="settings-page">
         <button class="back-btn"><span class="arrow-icon">←</span>回溯</button>
         <div class="settings-container">
-            <!-- 第一行：总音量 -->
-            <div class="volume-row">
-                <span class="volume-label" id="masterLabel">总音量</span>
-                <div class="slider-container">
-                    <input type="range" id="masterSlider" min="0" max="100" value="70" step="1"
-                           aria-labelledby="masterLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
-                    <span class="volume-value" id="masterValue" aria-live="polite">70</span>
-                </div>
-            </div>
-            <!-- 第二行：音乐音量 + 实际音量提示 -->
+            <!-- 第一行：音乐音量 -->
             <div class="volume-row">
                 <span class="volume-label" id="musicLabel">音乐音量</span>
                 <div class="slider-container">
                     <input type="range" id="musicSlider" min="0" max="100" value="70" step="1"
                            aria-labelledby="musicLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
                     <span class="volume-value" id="musicValue" aria-live="polite">70</span>
-                    <span class="actual-volume" id="musicActual">实际 49%</span>
                 </div>
             </div>
-            <!-- 第三行：音效音量 + 实际音量提示 -->
+            <!-- 第二行：音效音量 -->
             <div class="volume-row">
                 <span class="volume-label" id="sfxLabel">音效音量</span>
                 <div class="slider-container">
                     <input type="range" id="sfxSlider" min="0" max="100" value="70" step="1"
                            aria-labelledby="sfxLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
                     <span class="volume-value" id="sfxValue" aria-live="polite">70</span>
-                    <span class="actual-volume" id="sfxActual">实际 49%</span>
                 </div>
             </div>
-            <!-- 第四行：深色模式切换 -->
+            <!-- 第三行：深色模式切换 -->
             <div class="darkmode-row">
                 <span class="darkmode-label">深色模式</span>
                 <div class="darkmode-toggle" id="darkModeToggle"></div>
@@ -932,6 +909,12 @@
 
     <script>
         (function() {
+            // ---------- 清除所有旧数据 (仅一次) ----------
+            if (!localStorage.getItem('dataCleared')) {
+                localStorage.clear();
+                localStorage.setItem('dataCleared', '1');
+            }
+
             // ---------- 全局变量 ----------
             const pageHierarchy = {
                 'start-game-page': 'main-page',
@@ -954,18 +937,17 @@
             let currentPageId = 'main-page';
             const MUSIC_PAGES = ['main-page', 'settings-page'];
 
-            // ---------- 音频系统 (含淡入淡出) ----------
+            // ---------- 音频系统 (独立控制，无总音量) ----------
             const bgAudio = document.getElementById('bgMusic');
             const SFX_PATH = './点击音效.mp3';
-            let masterVol = 70, musicVol = 70, sfxVol = 70;
-            let fadeTimer = null;
+            let musicVol = 70;  // 0-100
+            let sfxVol = 70;
 
             // 加载音量设置
             try {
                 const saved = localStorage.getItem('audioSettings');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    if (typeof parsed.master === 'number') masterVol = parsed.master;
                     if (typeof parsed.music === 'number') musicVol = parsed.music;
                     if (typeof parsed.sfx === 'number') sfxVol = parsed.sfx;
                 }
@@ -974,21 +956,15 @@
             function saveVolumeSettings() {
                 try {
                     localStorage.setItem('audioSettings', JSON.stringify({
-                        master: masterVol,
                         music: musicVol,
                         sfx: sfxVol
                     }));
                 } catch (e) {}
             }
 
-            function setMusicVolume(vol) {
-                if (!bgAudio) return;
-                bgAudio.volume = Math.min(1, Math.max(0, vol));
-            }
-
             function updateMusicVolume() {
-                const vol = (masterVol / 100) * (musicVol / 100);
-                setMusicVolume(vol);
+                if (!bgAudio) return;
+                bgAudio.volume = musicVol / 100;
             }
 
             // 淡入淡出
@@ -1014,7 +990,7 @@
                 if (!MUSIC_PAGES.includes(currentPageId)) return;
                 bgAudio.volume = 0;
                 bgAudio.play().catch(() => {});
-                const targetVol = (masterVol / 100) * (musicVol / 100);
+                const targetVol = musicVol / 100;
                 const step = 0.05;
                 const interval = 50;
                 const fade = setInterval(() => {
@@ -1051,8 +1027,7 @@
 
             function playSfx() {
                 const audio = getSfxAudio();
-                const vol = (masterVol / 100) * (sfxVol / 100);
-                audio.volume = Math.min(1, Math.max(0, vol));
+                audio.volume = sfxVol / 100;
                 audio.play().catch(e => console.debug('音效播放失败', e));
             }
 
@@ -1071,7 +1046,6 @@
             let darkMode = localStorage.getItem('darkMode') === '1';
             applyDarkMode(darkMode);
 
-            // 设置页面深色切换
             const darkToggle = document.getElementById('darkModeToggle');
             if (darkMode) darkToggle.classList.add('active');
             darkToggle.addEventListener('click', () => {
@@ -1080,18 +1054,17 @@
                 darkToggle.classList.toggle('active', darkMode);
             });
 
-            // 点击小月亮也可切换（方便）
             document.getElementById('moonIcon').addEventListener('click', () => {
                 darkMode = !darkMode;
                 applyDarkMode(darkMode);
                 darkToggle.classList.toggle('active', darkMode);
             });
 
-            // ---------- 粒子效果 ----------
+            // ---------- 粒子效果 (优化版：漂浮渐隐后从角落爆炸重生) ----------
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
             let particles = [];
-            const PARTICLE_COUNT = 30;
+            const PARTICLE_COUNT = 40;
 
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
@@ -1100,34 +1073,75 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
 
-            function createParticles() {
-                for (let i = 0; i < PARTICLE_COUNT; i++) {
-                    particles.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        radius: Math.random() * 2 + 1,
-                        speedX: (Math.random() - 0.5) * 0.3,
-                        speedY: (Math.random() - 0.5) * 0.3,
-                        opacity: Math.random() * 0.5 + 0.2,
-                    });
+            // 粒子类
+            class Particle {
+                constructor() {
+                    this.reset(true); // 随机初始化
+                }
+                reset(initial = false) {
+                    // 随机选择角落 (0:左上,1:右上,2:左下,3:右下)
+                    const corner = Math.floor(Math.random() * 4);
+                    switch(corner) {
+                        case 0: // 左上
+                            this.x = 0;
+                            this.y = 0;
+                            break;
+                        case 1: // 右上
+                            this.x = canvas.width;
+                            this.y = 0;
+                            break;
+                        case 2: // 左下
+                            this.x = 0;
+                            this.y = canvas.height;
+                            break;
+                        case 3: // 右下
+                            this.x = canvas.width;
+                            this.y = canvas.height;
+                            break;
+                    }
+                    // 爆炸速度：向外扩散
+                    const angle = Math.random() * 2 * Math.PI;
+                    const speed = 0.5 + Math.random() * 1.5; // 速度适中
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.radius = Math.random() * 3 + 1;
+                    this.opacity = 0.8 + Math.random() * 0.2;
+                    this.life = 100 + Math.random() * 100; // 生命周期帧数
+                    this.maxLife = this.life;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life -= 1;
+                    // 透明度随生命周期减少
+                    this.opacity = this.life / this.maxLife * 0.8;
+                    // 边界检查：如果完全离开屏幕或生命周期结束，重置
+                    if (this.life <= 0 || this.x < -50 || this.x > canvas.width + 50 || this.y < -50 || this.y > canvas.height + 50) {
+                        this.reset();
+                    }
+                }
+                draw() {
+                    ctx.globalAlpha = this.opacity;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = document.body.classList.contains('dark-mode') ? '#fff' : '#333';
+                    ctx.fill();
                 }
             }
-            createParticles();
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            initParticles();
 
             function animateParticles() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = document.body.classList.contains('dark-mode') ? '#fff' : '#333';
                 particles.forEach(p => {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-                    if (p.x < 0) p.x = canvas.width;
-                    if (p.x > canvas.width) p.x = 0;
-                    if (p.y < 0) p.y = canvas.height;
-                    if (p.y > canvas.height) p.y = 0;
-                    ctx.globalAlpha = p.opacity;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
+                    p.update();
+                    p.draw();
                 });
                 requestAnimationFrame(animateParticles);
             }
@@ -1142,10 +1156,8 @@
                 if (isAnimating) return;
                 const touchEndX = e.changedTouches[0].clientX;
                 const diff = touchEndX - touchStartX;
-                if (Math.abs(diff) > 80) { // 滑动距离阈值
-                    // 右滑返回 (从左边划入)
+                if (Math.abs(diff) > 80) {
                     if (diff > 0) {
-                        // 返回上一页
                         const currentPage = document.querySelector('.page[style*="display: block"]') || document.getElementById('main-page');
                         if (currentPage && currentPage.id !== 'main-page') {
                             const backBtn = currentPage.querySelector('.back-btn');
@@ -1159,11 +1171,10 @@
             function renderChapters() {
                 const scroll = document.getElementById('chapterScroll');
                 scroll.innerHTML = '';
-                // 模拟20个章节，前5个已解锁，其余为骨架屏
                 for (let i = 1; i <= 20; i++) {
                     const btn = document.createElement('div');
                     btn.className = 'chapter-btn' + (i > 5 ? ' skeleton' : '');
-                    btn.textContent = i > 5 ? '' : `第${i}天`; // 已解锁显示文字，骨架无文字
+                    btn.textContent = i > 5 ? '' : `第${i}天`;
                     if (i <= 5) {
                         btn.setAttribute('data-coming-soon', 'false');
                         btn.addEventListener('click', function(e) {
@@ -1211,7 +1222,7 @@
                 document.getElementById('gameTime').textContent = gameSeconds;
             }
 
-            // 点击计数 (通过事件委托)
+            // 点击计数 (优化选择器，排除深色切换等非主要按钮？但保留原有逻辑)
             document.body.addEventListener('click', function(e) {
                 const target = e.target.closest('.btn, .long-btn, .chapter-btn, .ach-btn, .ach-card, .back-btn, .sign-btn, .darkmode-toggle, .moon-icon');
                 if (target) {
@@ -1231,8 +1242,6 @@
                 }, 1000);
             }
             startTimer();
-
-            // 页面切换时暂停计时？不，全局计时
 
             // ---------- 每日文案与签到 ----------
             const quotes = [
@@ -1271,13 +1280,11 @@
                 } catch {
                     dailyData = {};
                 }
-                // 日期显示
                 const now = new Date();
                 const month = now.getMonth() + 1;
                 const day = now.getDate();
                 document.getElementById('currentDate').textContent = `${month}月${day}日`;
 
-                // 每日文案
                 let quoteIndex;
                 if (dailyData.date === today && dailyData.quoteIndex !== undefined) {
                     quoteIndex = dailyData.quoteIndex;
@@ -1288,7 +1295,6 @@
                 const quoteText = quotes[quoteIndex];
                 document.getElementById('dailyQuote').textContent = `“${quoteText}”`;
 
-                // 签到按钮状态
                 const signBtn = document.getElementById('signBtn');
                 let signDays = dailyData.signDays || 0;
                 let lastSignDate = dailyData.lastSignDate || '';
@@ -1299,24 +1305,19 @@
                     signBtn.textContent = '签到';
                 }
 
-                // 保存 dailyData
                 localStorage.setItem('dailyData', JSON.stringify(dailyData));
 
-                // 签到逻辑
                 signBtn.onclick = function() {
-                    playSfx(); // 音效
+                    playSfx();
                     const currentDaily = JSON.parse(localStorage.getItem('dailyData')) || {};
                     const todayKey = getTodayKey();
                     if (currentDaily.lastSignDate === todayKey) {
-                        // 今天已签到，显示“已签到”但可以重复点击？只提示
                         signBtn.textContent = `第${currentDaily.signDays}天`;
                         return;
                     }
-                    // 显示“签到成功”3秒
                     const originalText = signBtn.textContent;
                     signBtn.textContent = '签到成功';
                     setTimeout(() => {
-                        // 更新签到天数
                         let newDays = (currentDaily.signDays || 0) + 1;
                         currentDaily.signDays = newDays;
                         currentDaily.lastSignDate = todayKey;
@@ -1326,33 +1327,13 @@
                 };
             }
 
-            // ---------- 字体缩放适应：已使用rem/em----------
-
-            // ---------- 屏幕阅读器优化：已为滑块添加aria ----------
-
-            // ---------- 音量滑块与视觉提示 ----------
-            const masterSlider = document.getElementById('masterSlider');
-            const masterValue = document.getElementById('masterValue');
+            // ---------- 音量滑块 ----------
             const musicSlider = document.getElementById('musicSlider');
             const musicValue = document.getElementById('musicValue');
-            const musicActual = document.getElementById('musicActual');
             const sfxSlider = document.getElementById('sfxSlider');
             const sfxValue = document.getElementById('sfxValue');
-            const sfxActual = document.getElementById('sfxActual');
-
-            function updateActualVolumes() {
-                const musicActualVal = Math.round((masterVol / 100) * (musicVol / 100) * 100);
-                musicActual.textContent = `实际 ${musicActualVal}%`;
-                musicActual.classList.toggle('muted', musicActualVal === 0);
-                const sfxActualVal = Math.round((masterVol / 100) * (sfxVol / 100) * 100);
-                sfxActual.textContent = `实际 ${sfxActualVal}%`;
-                sfxActual.classList.toggle('muted', sfxActualVal === 0);
-            }
 
             function initVolumeControls() {
-                masterSlider.value = masterVol;
-                masterValue.textContent = masterVol;
-                masterSlider.setAttribute('aria-valuenow', masterVol);
                 musicSlider.value = musicVol;
                 musicValue.textContent = musicVol;
                 musicSlider.setAttribute('aria-valuenow', musicVol);
@@ -1360,34 +1341,23 @@
                 sfxValue.textContent = sfxVol;
                 sfxSlider.setAttribute('aria-valuenow', sfxVol);
                 updateMusicVolume();
-                updateActualVolumes();
 
-                masterSlider.addEventListener('input', function(e) {
-                    masterVol = parseInt(e.target.value, 10);
-                    masterValue.textContent = masterVol;
-                    masterSlider.setAttribute('aria-valuenow', masterVol);
-                    updateMusicVolume();
-                    updateActualVolumes();
-                    saveVolumeSettings();
-                });
                 musicSlider.addEventListener('input', function(e) {
                     musicVol = parseInt(e.target.value, 10);
                     musicValue.textContent = musicVol;
                     musicSlider.setAttribute('aria-valuenow', musicVol);
                     updateMusicVolume();
-                    updateActualVolumes();
                     saveVolumeSettings();
                 });
                 sfxSlider.addEventListener('input', function(e) {
                     sfxVol = parseInt(e.target.value, 10);
                     sfxValue.textContent = sfxVol;
                     sfxSlider.setAttribute('aria-valuenow', sfxVol);
-                    updateActualVolumes();
                     saveVolumeSettings();
                 });
             }
 
-            // ---------- 页面切换函数 (集成淡入淡出) ----------
+            // ---------- 页面切换函数 ----------
             function switchPage(fromPageId, toPageId) {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -1400,12 +1370,9 @@
                 }
 
                 if (MUSIC_PAGES.includes(fromPageId)) {
-                    fadeOutMusic(() => {
-                        // 音乐已暂停
-                    });
+                    fadeOutMusic(() => {});
                 }
 
-                // 动画...
                 applyRandomAnimation(fromPage, false);
                 fromPage.classList.add('time-forward');
                 
@@ -1434,7 +1401,6 @@
                 }, 400);
             }
 
-            // 随机动画参数
             function generateRandomAnimationParams() {
                 return {
                     startRotate: Math.random() * 30 - 15,
@@ -1485,14 +1451,13 @@
                 }, 20);
             }
 
-            // ---------- DOM 加载完成初始化 ----------
+            // ---------- DOM 加载完成 ----------
             document.addEventListener('DOMContentLoaded', function() {
                 initVolumeControls();
                 loadStats();
                 renderChapters();
                 loadDaily();
 
-                // 主页面按钮
                 document.querySelectorAll('.btn[data-target]').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -1501,7 +1466,6 @@
                     });
                 });
 
-                // 开始游戏长按钮
                 document.querySelectorAll('.long-btn').forEach(btn => {
                     if (btn.hasAttribute('data-coming-soon')) {
                         btn.addEventListener('click', function(e) {
@@ -1518,7 +1482,6 @@
                     }
                 });
 
-                // 成就墙元素
                 document.querySelectorAll('.ach-btn, .ach-card').forEach(el => {
                     el.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -1527,7 +1490,6 @@
                     });
                 });
 
-                // 所有回溯按钮
                 document.querySelectorAll('.back-btn').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -1542,7 +1504,6 @@
 
                 reanimateMainPage();
 
-                // 预加载音效对象池
                 for (let i = 0; i < MAX_SFX; i++) {
                     const audio = new Audio(SFX_PATH);
                     audio.preload = 'auto';
@@ -1550,7 +1511,6 @@
                     sfxPool.push(audio);
                 }
 
-                // 如果首页在音乐页，尝试播放音乐
                 if (MUSIC_PAGES.includes('main-page')) {
                     fadeInMusic();
                 }
